@@ -16,7 +16,8 @@ group "default" {
     "flow-worker",
     "flow-api",
     "flow-snapshot-worker",
-    "peerdb-ui"
+    "peerdb-ui",
+    "redpanda"
   ]
 }
 
@@ -88,5 +89,18 @@ target "peerdb-ui" {
   tags = [
     "${REGISTRY}/peerdb-ui:${TAG}",
     "${REGISTRY}/peerdb-ui:${SHA_SHORT}",
+  ]
+}
+
+target "redpanda" {
+  context    = "."
+  dockerfile = "stacks/redpanda.Dockerfile"
+  platforms = [
+    "linux/amd64",
+    "linux/arm64",
+  ]
+  tags = [
+    "${REGISTRY}/redpanda:${TAG}",
+    "${REGISTRY}/redpanda:${SHA_SHORT}",
   ]
 }

@@ -1,4 +1,4 @@
-name: peerdb-quickstart
+# name: peerdb-quickstart
 
 x-minio-config: &minio-config
   PEERDB_CLICKHOUSE_AWS_CREDENTIALS_AWS_ACCESS_KEY_ID: _peerdb_minioadmin
@@ -6,6 +6,8 @@ x-minio-config: &minio-config
   PEERDB_CLICKHOUSE_AWS_CREDENTIALS_AWS_REGION: us-east-1
   PEERDB_CLICKHOUSE_AWS_CREDENTIALS_AWS_ENDPOINT_URL_S3: http://host.docker.internal:9001
   PEERDB_CLICKHOUSE_AWS_S3_BUCKET_NAME: peerdbbucket
+  #Test Access Key : fJpDRroi0auSzRl26uYC
+  #Test Secret Key : PjlVqa5xtrQbGKg3Xyp4Pgxzxe2EfXVilOG02SQs
 
 x-catalog-config: &catalog-config
   PEERDB_CATALOG_HOST: catalog
@@ -204,9 +206,52 @@ services:
       wait
       "
 
+  redpanda:
+    container_name: redpanda
+    image: ghcr.io/peerdb-io/redpanda:latest-dev
+    restart: unless-stopped
+    command:
+      - redpanda
+      - start
+      - --kafka-addr
+      - internal://0.0.0.0:9092,external://0.0.0.0:19092
+      - --advertise-kafka-addr
+      - internal://redpanda:9092,external://localhost:19092
+      - --pandaproxy-addr
+      - internal://0.0.0.0:8082,external://0.0.0.0:18082
+      - --advertise-pandaproxy-addr
+      - internal://redpanda:8082,external://localhost:18082
+      - --schema-registry-addr
+      - internal://0.0.0.0:8081,external://0.0.0.0:18081
+      - --rpc-addr
+      - redpanda:33145
+      - --advertise-rpc-addr
+      - redpanda:33145
+      - --smp
+      - '1'
+      - --memory
+      - 1G
+      - --mode
+      - dev-container
+      - --default-log-level=info
+    ports:
+      - "18081:18081"  # Schema Registry (external)
+      - "18082:18082"  # Pandaproxy (external)
+      - "19092:19092"  # Kafka API (external)
+      - "19644:9644"   # Admin API (external)
+    volumes:
+      - redpanda-data:/var/lib/redpanda/data
+    healthcheck:
+      test: ["CMD-SHELL", "rpk cluster health | grep -q 'Healthy' || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+
 volumes:
   pgdata:
   minio-data:
+  redpanda-data:
 
 networks:
   default:
