@@ -248,6 +248,26 @@ services:
       retries: 5
       start_period: 30s
 
+  redpanda-console:
+    container_name: redpanda-console
+    image: docker.redpanda.com/redpandadata/console:latest
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      KAFKA_BROKERS: redpanda:9092
+      REDPANDA_ADMINAPI_ENABLED: true
+      REDPANDA_ADMINAPI_URLS: http://redpanda:9644
+      REDPANDA_CONSOLE_EDITION: community
+    depends_on:
+      - redpanda
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+
 volumes:
   pgdata:
   minio-data:
