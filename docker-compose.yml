@@ -219,6 +219,12 @@ services:
       CLICKHOUSE_USER: default
       CLICKHOUSE_PASSWORD: "changeme"
       CLICKHOUSE_DEFAULT_ACCESS_MANAGEMENT: 1
+      # ClickHouse needs its own S3 endpoint configuration
+      PEERDB_CLICKHOUSE_AWS_CREDENTIALS_AWS_ACCESS_KEY_ID: _peerdb_minioadmin
+      PEERDB_CLICKHOUSE_AWS_CREDENTIALS_AWS_SECRET_ACCESS_KEY: _peerdb_minioadmin
+      PEERDB_CLICKHOUSE_AWS_CREDENTIALS_AWS_REGION: us-east-1
+      PEERDB_CLICKHOUSE_AWS_CREDENTIALS_AWS_ENDPOINT_URL_S3: http://minio:9000
+      PEERDB_CLICKHOUSE_AWS_S3_BUCKET_NAME: peerdbbucket
     volumes:
       - clickhouse-data:/var/lib/clickhouse
       - clickhouse-logs:/var/log/clickhouse-server
@@ -232,6 +238,8 @@ services:
       timeout: 5s
       retries: 5
       start_period: 30s
+    depends_on:
+      - minio
     extra_hosts:
       - "host.docker.internal:host-gateway"
 
